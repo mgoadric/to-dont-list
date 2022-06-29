@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 
-class Product {
-  const Product({required this.name});
+class Item {
+  const Item({required this.name});
 
   final String name;
 }
 
-typedef CartChangedCallback = Function(Product product, bool inCart);
+typedef ToDoListChangedCallback = Function(Item item, bool completed);
+typedef ToDoListRemovedCallback = Function(Item item);
 
-class ShoppingListItem extends StatelessWidget {
-  ShoppingListItem({
-    required this.product,
-    required this.inCart,
-    required this.onCartChanged,
-  }) : super(key: ObjectKey(product));
+class ToDoListItem extends StatelessWidget {
+  ToDoListItem(
+      {required this.item,
+      required this.completed,
+      required this.onListChanged,
+      required this.onDeleteItem})
+      : super(key: ObjectKey(item));
 
-  final Product product;
-  final bool inCart;
-  final CartChangedCallback onCartChanged;
+  final Item item;
+  final bool completed;
+  final ToDoListChangedCallback onListChanged;
+  final ToDoListRemovedCallback onDeleteItem;
 
   Color _getColor(BuildContext context) {
     // The theme depends on the BuildContext because different
@@ -25,13 +28,13 @@ class ShoppingListItem extends StatelessWidget {
     // The BuildContext indicates where the build is
     // taking place and therefore which theme to use.
 
-    return inCart //
+    return completed //
         ? Colors.black54
         : Theme.of(context).primaryColor;
   }
 
   TextStyle? _getTextStyle(BuildContext context) {
-    if (!inCart) return null;
+    if (!completed) return null;
 
     return const TextStyle(
       color: Colors.black54,
@@ -43,24 +46,35 @@ class ShoppingListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        onCartChanged(product, inCart);
+        onListChanged(item, completed);
+      },
+      onLongPress: () {
+        onDeleteItem(item);
       },
       leading: CircleAvatar(
         backgroundColor: _getColor(context),
-        child: Text(product.name[0]),
+        child: Text(item.name[0]),
       ),
       title: Text(
-        product.name,
+        item.name,
         style: _getTextStyle(context),
       ),
     );
   }
 }
 
-class ShoppingList extends StatefulWidget {
-  const ShoppingList({required this.products, super.key});
+class ToDoList extends StatefulWidget {
+  ToDoList({super.key});
 
-  final List<Product> products;
+  final List<Item> items = [
+    Item(name: 'Make Food'),
+    Item(name: 'Do Laundry'),
+    Item(name: 'Touch The Puppet Head'),
+  ];
+
+  void testing() {
+    print("hello");
+  }
 
   // The framework calls createState the first time
   // a widget appears at a given location in the tree.
@@ -69,25 +83,57 @@ class ShoppingList extends StatefulWidget {
   // the State object instead of creating a new State object.
 
   @override
-  _ShoppingListState createState() => _ShoppingListState();
+  _ToDoListState createState() => _ToDoListState();
 }
 
-class _ShoppingListState extends State<ShoppingList> {
-  final _shoppingCart = <Product>{};
+class _ToDoListState extends State<ToDoList> {
+  final _itemSet = <Item>{};
 
-  void _handleCartChanged(Product product, bool inCart) {
+  void _handleListChanged(Item item, bool completed) {
     setState(() {
-      // When a user changes what's in the cart, you need
-      // to change _shoppingCart inside a setState call to
+      // When a user changes what's in the list, you need
+      // to change _itemSet inside a setState call to
       // trigger a rebuild.
       // The framework then calls build, below,
       // which updates the visual appearance of the app.
 
-      if (!inCart) {
-        _shoppingCart.add(product);
+      widget.items.remove(item);
+      if (!completed) {
+        print("Removing");
+        _itemSet.add(item);
+        widget.items.add(item);
       } else {
-        _shoppingCart.remove(product);
+        print("Adding Back");
+        _itemSet.remove(item);
+        widget.items.insert(0, item);
       }
+    });
+  }
+
+  void _handleDeleteItem(Item item) {
+    setState(() {
+      print("Deleting item");
+
+      widget.items.remove(item);
+    });
+  }
+
+  void _handleNewItem() {
+    setState(() {
+      // When a user changes what's in the list, you need
+      // to change _itemSet inside a setState call to
+      // trigger a rebuild.
+      // The framework then calls build, below,
+      // which updates the visual appearance of the app.
+
+      Item item = Item(name: "testing");
+      ToDoListItem tditem = ToDoListItem(
+        item: item,
+        completed: false,
+        onListChanged: _handleListChanged,
+        onDeleteItem: _handleDeleteItem,
+      );
+      widget.items.insert(0, item);
     });
   }
 
@@ -95,31 +141,41 @@ class _ShoppingListState extends State<ShoppingList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shopping List'),
+        title: const Text('To Do List'),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
-        children: widget.products.map((product) {
-          return ShoppingListItem(
-            product: product,
-            inCart: _shoppingCart.contains(product),
-            onCartChanged: _handleCartChanged,
+        children: widget.items.map((item) {
+          return ToDoListItem(
+            item: item,
+            completed: _itemSet.contains(item),
+            onListChanged: _handleListChanged,
+            onDeleteItem: _handleDeleteItem,
           );
         }).toList(),
       ),
+      floatingActionButton: FloatingActionButton(onPressed: _handleNewItem),
     );
+  }
+}
+
+class MyWidget extends StatefulWidget {
+  const MyWidget({Key? key}) : super(key: key);
+
+  @override
+  State<MyWidget> createState() => _MyWidgetState();
+}
+
+class _MyWidgetState extends State<MyWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return ToDoList();
   }
 }
 
 void main() {
   runApp(const MaterialApp(
-    title: 'Shopping App',
-    home: ShoppingList(
-      products: [
-        Product(name: 'Eggs'),
-        Product(name: 'Flour'),
-        Product(name: 'Chocolate chips'),
-      ],
-    ),
+    title: 'To Do List',
+    home: MyWidget(),
   ));
 }
