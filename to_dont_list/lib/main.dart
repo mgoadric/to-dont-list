@@ -48,9 +48,11 @@ class ToDoListItem extends StatelessWidget {
       onTap: () {
         onListChanged(item, completed);
       },
-      onLongPress: () {
-        onDeleteItem(item);
-      },
+      onLongPress: completed
+          ? () {
+              onDeleteItem(item);
+            }
+          : null,
       leading: CircleAvatar(
         backgroundColor: _getColor(context),
         child: Text(item.name[0]),
@@ -72,10 +74,6 @@ class ToDoList extends StatefulWidget {
     Item(name: 'Touch The Puppet Head'),
   ];
 
-  void testing() {
-    print("hello");
-  }
-
   // The framework calls createState the first time
   // a widget appears at a given location in the tree.
   // If the parent rebuilds and uses the same type of
@@ -87,6 +85,64 @@ class ToDoList extends StatefulWidget {
 }
 
 class _ToDoListState extends State<ToDoList> {
+  // Dialog with text from https://www.appsdeveloperblog.com/alert-dialog-with-a-text-field-in-flutter/
+  final TextEditingController _inputController = TextEditingController();
+  final ButtonStyle yesStyle = ElevatedButton.styleFrom(
+      textStyle: const TextStyle(fontSize: 20), primary: Colors.green);
+  final ButtonStyle noStyle = ElevatedButton.styleFrom(
+      textStyle: const TextStyle(fontSize: 20), primary: Colors.red);
+
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Item To Add'),
+            content: TextField(
+              onChanged: (value) {
+                setState(() {
+                  valueText = value;
+                });
+              },
+              controller: _inputController,
+              decoration:
+                  const InputDecoration(hintText: "type something here"),
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                style: noStyle,
+                child: const Text('CANCEL'),
+                onPressed: () {
+                  setState(() {
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+              // https://stackoverflow.com/questions/52468987/how-to-turn-disabled-button-into-enabled-button-depending-on-conditions
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _inputController,
+                builder: (context, value, child) {
+                  return ElevatedButton(
+                    style: yesStyle,
+                    onPressed: value.text.isNotEmpty
+                        ? () {
+                            setState(() {
+                              _handleNewItem(valueText);
+                              Navigator.pop(context);
+                            });
+                          }
+                        : null,
+                    child: const Text('OK'),
+                  );
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  String valueText = "";
+
   final _itemSet = <Item>{};
 
   void _handleListChanged(Item item, bool completed) {
@@ -118,7 +174,7 @@ class _ToDoListState extends State<ToDoList> {
     });
   }
 
-  void _handleNewItem() {
+  void _handleNewItem(String itemText) {
     setState(() {
       // When a user changes what's in the list, you need
       // to change _itemSet inside a setState call to
@@ -126,7 +182,7 @@ class _ToDoListState extends State<ToDoList> {
       // The framework then calls build, below,
       // which updates the visual appearance of the app.
 
-      Item item = Item(name: "testing");
+      Item item = Item(name: itemText);
       ToDoListItem tditem = ToDoListItem(
         item: item,
         completed: false,
@@ -134,28 +190,32 @@ class _ToDoListState extends State<ToDoList> {
         onDeleteItem: _handleDeleteItem,
       );
       widget.items.insert(0, item);
+      _inputController.clear();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('To Do List'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        children: widget.items.map((item) {
-          return ToDoListItem(
-            item: item,
-            completed: _itemSet.contains(item),
-            onListChanged: _handleListChanged,
-            onDeleteItem: _handleDeleteItem,
-          );
-        }).toList(),
-      ),
-      floatingActionButton: FloatingActionButton(onPressed: _handleNewItem),
-    );
+        appBar: AppBar(
+          title: const Text('To Do List'),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          children: widget.items.map((item) {
+            return ToDoListItem(
+              item: item,
+              completed: _itemSet.contains(item),
+              onListChanged: _handleListChanged,
+              onDeleteItem: _handleDeleteItem,
+            );
+          }).toList(),
+        ),
+        floatingActionButton: FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () {
+              _displayTextInputDialog(context);
+            }));
   }
 }
 
