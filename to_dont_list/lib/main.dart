@@ -1,78 +1,11 @@
+// Started with https://docs.flutter.dev/development/ui/widgets-intro
 import 'package:flutter/material.dart';
-
-class Item {
-  const Item({required this.name});
-
-  final String name;
-}
-
-typedef ToDoListChangedCallback = Function(Item item, bool completed);
-typedef ToDoListRemovedCallback = Function(Item item);
-
-class ToDoListItem extends StatelessWidget {
-  ToDoListItem(
-      {required this.item,
-      required this.completed,
-      required this.onListChanged,
-      required this.onDeleteItem})
-      : super(key: ObjectKey(item));
-
-  final Item item;
-  final bool completed;
-  final ToDoListChangedCallback onListChanged;
-  final ToDoListRemovedCallback onDeleteItem;
-
-  Color _getColor(BuildContext context) {
-    // The theme depends on the BuildContext because different
-    // parts of the tree can have different themes.
-    // The BuildContext indicates where the build is
-    // taking place and therefore which theme to use.
-
-    return completed //
-        ? Colors.black54
-        : Theme.of(context).primaryColor;
-  }
-
-  TextStyle? _getTextStyle(BuildContext context) {
-    if (!completed) return null;
-
-    return const TextStyle(
-      color: Colors.black54,
-      decoration: TextDecoration.lineThrough,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () {
-        onListChanged(item, completed);
-      },
-      onLongPress: completed
-          ? () {
-              onDeleteItem(item);
-            }
-          : null,
-      leading: CircleAvatar(
-        backgroundColor: _getColor(context),
-        child: Text(item.name[0]),
-      ),
-      title: Text(
-        item.name,
-        style: _getTextStyle(context),
-      ),
-    );
-  }
-}
+import 'package:to_dont_list/toDoItems.dart';
 
 class ToDoList extends StatefulWidget {
   ToDoList({super.key});
 
-  final List<Item> items = [
-    Item(name: 'Make Food'),
-    Item(name: 'Do Laundry'),
-    Item(name: 'Touch The Puppet Head'),
-  ];
+  final List<Item> items = [const Item(name: "add more todos")];
 
   // The framework calls createState the first time
   // a widget appears at a given location in the tree.
@@ -81,10 +14,10 @@ class ToDoList extends StatefulWidget {
   // the State object instead of creating a new State object.
 
   @override
-  _ToDoListState createState() => _ToDoListState();
+  ToDoListState createState() => ToDoListState();
 }
 
-class _ToDoListState extends State<ToDoList> {
+class ToDoListState extends State<ToDoList> {
   // Dialog with text from https://www.appsdeveloperblog.com/alert-dialog-with-a-text-field-in-flutter/
   final TextEditingController _inputController = TextEditingController();
   final ButtonStyle yesStyle = ElevatedButton.styleFrom(
@@ -183,12 +116,6 @@ class _ToDoListState extends State<ToDoList> {
       // which updates the visual appearance of the app.
 
       Item item = Item(name: itemText);
-      ToDoListItem tditem = ToDoListItem(
-        item: item,
-        completed: false,
-        onListChanged: _handleListChanged,
-        onDeleteItem: _handleDeleteItem,
-      );
       widget.items.insert(0, item);
       _inputController.clear();
     });
@@ -219,14 +146,14 @@ class _ToDoListState extends State<ToDoList> {
   }
 }
 
-class MyWidget extends StatefulWidget {
-  const MyWidget({Key? key}) : super(key: key);
+class ToDo extends StatefulWidget {
+  const ToDo({Key? key}) : super(key: key);
 
   @override
-  State<MyWidget> createState() => _MyWidgetState();
+  State<ToDo> createState() => _ToDoState();
 }
 
-class _MyWidgetState extends State<MyWidget> {
+class _ToDoState extends State<ToDo> {
   @override
   Widget build(BuildContext context) {
     return ToDoList();
@@ -236,6 +163,6 @@ class _MyWidgetState extends State<MyWidget> {
 void main() {
   runApp(const MaterialApp(
     title: 'To Do List',
-    home: MyWidget(),
+    home: ToDo(),
   ));
 }
