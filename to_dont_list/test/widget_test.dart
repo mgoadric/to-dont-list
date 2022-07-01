@@ -17,7 +17,7 @@ void main() {
     expect(item.abbrev(), "a");
   });
 
-// Yes, you really need the MaterialApp and Scaffold
+  // Yes, you really need the MaterialApp and Scaffold
   testWidgets('ToDoListItem has a text and abbreviation', (tester) async {
     await tester.pumpWidget(MaterialApp(
         home: Scaffold(
@@ -28,10 +28,16 @@ void main() {
                 onDeleteItem: (Item item) {}))));
     final abbvFinder = find.text('t');
     final textFinder = find.text('test');
+    final avatarFinder = find.byType(CircleAvatar);
+
+    CircleAvatar circ = tester.firstWidget(avatarFinder);
+    Text ctext = circ.child as Text;
 
     // Use the `findsOneWidget` matcher provided by flutter_test to verify
     // that the Text widgets appear exactly once in the widget tree.
     expect(abbvFinder, findsOneWidget);
     expect(textFinder, findsOneWidget);
+    expect(circ.backgroundColor, Colors.black54);
+    expect(ctext, "t");
   });
 }
