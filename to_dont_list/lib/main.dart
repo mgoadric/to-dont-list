@@ -1,23 +1,17 @@
 // Started with https://docs.flutter.dev/development/ui/widgets-intro
 import 'package:flutter/material.dart';
-import 'package:to_dont_list/toDoItems.dart';
+import 'package:to_dont_list/to_do_items.dart';
 
 class ToDoList extends StatefulWidget {
   ToDoList({super.key});
 
   final List<Item> items = [const Item(name: "add more todos")];
 
-  // The framework calls createState the first time
-  // a widget appears at a given location in the tree.
-  // If the parent rebuilds and uses the same type of
-  // widget (with the same key), the framework re-uses
-  // the State object instead of creating a new State object.
-
   @override
-  ToDoListState createState() => ToDoListState();
+  State createState() => _ToDoListState();
 }
 
-class ToDoListState extends State<ToDoList> {
+class _ToDoListState extends State<ToDoList> {
   // Dialog with text from https://www.appsdeveloperblog.com/alert-dialog-with-a-text-field-in-flutter/
   final TextEditingController _inputController = TextEditingController();
   final ButtonStyle yesStyle = ElevatedButton.styleFrom(
@@ -51,6 +45,7 @@ class ToDoListState extends State<ToDoList> {
                   });
                 },
               ),
+
               // https://stackoverflow.com/questions/52468987/how-to-turn-disabled-button-into-enabled-button-depending-on-conditions
               ValueListenableBuilder<TextEditingValue>(
                 valueListenable: _inputController,
@@ -88,11 +83,11 @@ class ToDoListState extends State<ToDoList> {
 
       widget.items.remove(item);
       if (!completed) {
-        print("Removing");
+        print("Completing");
         _itemSet.add(item);
         widget.items.add(item);
       } else {
-        print("Adding Back");
+        print("Making Undone");
         _itemSet.remove(item);
         widget.items.insert(0, item);
       }
@@ -102,19 +97,13 @@ class ToDoListState extends State<ToDoList> {
   void _handleDeleteItem(Item item) {
     setState(() {
       print("Deleting item");
-
       widget.items.remove(item);
     });
   }
 
   void _handleNewItem(String itemText) {
     setState(() {
-      // When a user changes what's in the list, you need
-      // to change _itemSet inside a setState call to
-      // trigger a rebuild.
-      // The framework then calls build, below,
-      // which updates the visual appearance of the app.
-
+      print("Adding new item");
       Item item = Item(name: itemText);
       widget.items.insert(0, item);
       _inputController.clear();
