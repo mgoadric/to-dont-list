@@ -12,7 +12,7 @@ import 'package:to_dont_list/main.dart';
 import 'package:to_dont_list/to_do_items.dart';
 
 void main() {
-  test("Item abbreviation should be first letter", () {
+  test('Item abbreviation should be first letter', () {
     const item = Item(name: "add more todos");
     expect(item.abbrev(), "a");
   });
@@ -38,6 +38,36 @@ void main() {
     expect(abbvFinder, findsOneWidget);
     expect(textFinder, findsOneWidget);
     expect(circ.backgroundColor, Colors.black54);
-    expect(ctext, "t");
+    expect(ctext.data, "t");
+  });
+
+  testWidgets('Default ToDoList has one item', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: ToDoList()));
+
+    final listItemFinder = find.byType(ToDoListItem);
+
+    expect(listItemFinder, findsOneWidget);
+  });
+
+  testWidgets('Clicking and Typing adds item to ToDoList', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: ToDoList()));
+
+    expect(find.byType(TextField), findsNothing);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pump();
+    expect(find.text("hi"), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'hi');
+    await tester.pump();
+    expect(find.text("hi"), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key("OKButton")));
+    await tester.pump();
+    expect(find.text("hi"), findsOneWidget);
+
+    final listItemFinder = find.byType(ToDoListItem);
+
+    expect(listItemFinder, findsNWidgets(2));
   });
 }

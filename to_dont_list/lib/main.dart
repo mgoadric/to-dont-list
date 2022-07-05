@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:to_dont_list/to_do_items.dart';
 
 class ToDoList extends StatefulWidget {
-  ToDoList({super.key});
-
-  final List<Item> items = [const Item(name: "add more todos")];
+  const ToDoList({super.key});
 
   @override
   State createState() => _ToDoListState();
@@ -20,6 +18,7 @@ class _ToDoListState extends State<ToDoList> {
       textStyle: const TextStyle(fontSize: 20), primary: Colors.red);
 
   Future<void> _displayTextInputDialog(BuildContext context) async {
+    print("Loading Dialog");
     return showDialog(
         context: context,
         builder: (context) {
@@ -37,6 +36,7 @@ class _ToDoListState extends State<ToDoList> {
             ),
             actions: <Widget>[
               ElevatedButton(
+                key: const Key("CancelButton"),
                 style: noStyle,
                 child: const Text('CANCEL'),
                 onPressed: () {
@@ -51,9 +51,11 @@ class _ToDoListState extends State<ToDoList> {
                 valueListenable: _inputController,
                 builder: (context, value, child) {
                   return ElevatedButton(
+                    key: const Key("OKButton"),
                     style: yesStyle,
                     onPressed: value.text.isNotEmpty
                         ? () {
+                            print("OK Button Pressed");
                             setState(() {
                               _handleNewItem(valueText);
                               Navigator.pop(context);
@@ -71,6 +73,8 @@ class _ToDoListState extends State<ToDoList> {
 
   String valueText = "";
 
+  final List<Item> items = [const Item(name: "add more todos")];
+
   final _itemSet = <Item>{};
 
   void _handleListChanged(Item item, bool completed) {
@@ -81,15 +85,15 @@ class _ToDoListState extends State<ToDoList> {
       // The framework then calls build, below,
       // which updates the visual appearance of the app.
 
-      widget.items.remove(item);
+      items.remove(item);
       if (!completed) {
         print("Completing");
         _itemSet.add(item);
-        widget.items.add(item);
+        items.add(item);
       } else {
         print("Making Undone");
         _itemSet.remove(item);
-        widget.items.insert(0, item);
+        items.insert(0, item);
       }
     });
   }
@@ -97,7 +101,7 @@ class _ToDoListState extends State<ToDoList> {
   void _handleDeleteItem(Item item) {
     setState(() {
       print("Deleting item");
-      widget.items.remove(item);
+      items.remove(item);
     });
   }
 
@@ -105,7 +109,7 @@ class _ToDoListState extends State<ToDoList> {
     setState(() {
       print("Adding new item");
       Item item = Item(name: itemText);
-      widget.items.insert(0, item);
+      items.insert(0, item);
       _inputController.clear();
     });
   }
@@ -118,7 +122,7 @@ class _ToDoListState extends State<ToDoList> {
         ),
         body: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          children: widget.items.map((item) {
+          children: items.map((item) {
             return ToDoListItem(
               item: item,
               completed: _itemSet.contains(item),
@@ -135,23 +139,9 @@ class _ToDoListState extends State<ToDoList> {
   }
 }
 
-class ToDo extends StatefulWidget {
-  const ToDo({Key? key}) : super(key: key);
-
-  @override
-  State<ToDo> createState() => _ToDoState();
-}
-
-class _ToDoState extends State<ToDo> {
-  @override
-  Widget build(BuildContext context) {
-    return ToDoList();
-  }
-}
-
 void main() {
   runApp(const MaterialApp(
     title: 'To Do List',
-    home: ToDo(),
+    home: ToDoList(),
   ));
 }
