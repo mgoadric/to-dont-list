@@ -36,9 +36,9 @@ class _ToDoListState extends State<ToDoList> {
             ),
             actions: <Widget>[
               ElevatedButton(
-                key: const Key("CancelButton"),
-                style: noStyle,
-                child: const Text('CANCEL'),
+                key: const Key("OkButton"),
+                style: yesStyle,
+                child: const Text('OK'),
                 onPressed: () {
                   setState(() {
                     Navigator.pop(context);
@@ -51,18 +51,17 @@ class _ToDoListState extends State<ToDoList> {
                 valueListenable: _inputController,
                 builder: (context, value, child) {
                   return ElevatedButton(
-                    key: const Key("OKButton"),
-                    style: yesStyle,
+                    key: const Key("CancelButton"),
+                    style: noStyle,
                     onPressed: value.text.isNotEmpty
                         ? () {
-                            print("OK Button Pressed");
                             setState(() {
                               _handleNewItem(valueText);
                               Navigator.pop(context);
                             });
                           }
                         : null,
-                    child: const Text('OK'),
+                    child: const Text('Cancel'),
                   );
                 },
               ),
@@ -108,7 +107,7 @@ class _ToDoListState extends State<ToDoList> {
   void _handleNewItem(String itemText) {
     setState(() {
       print("Adding new item");
-      Item item = Item(name: itemText);
+      Item item = const Item(name: "itemText");
       items.insert(0, item);
       _inputController.clear();
     });

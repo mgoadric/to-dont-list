@@ -6,7 +6,7 @@ class Item {
   final String name;
 
   String abbrev() {
-    return name[0];
+    return name.substring(0, 2);
   }
 }
 
@@ -33,7 +33,7 @@ class ToDoListItem extends StatelessWidget {
     // taking place and therefore which theme to use.
 
     return completed //
-        ? Colors.black54
+        ? Colors.black
         : Theme.of(context).primaryColor;
   }
 
@@ -59,10 +59,10 @@ class ToDoListItem extends StatelessWidget {
           : null,
       leading: CircleAvatar(
         backgroundColor: _getColor(context),
-        child: Text(item.abbrev()),
+        child: Text(item.name),
       ),
       title: Text(
-        item.name,
+        item.abbrev(),
         style: _getTextStyle(context),
       ),
     );
