@@ -18,7 +18,23 @@ void main() {
   });
 
   // Yes, you really need the MaterialApp and Scaffold
-  testWidgets('ToDoListItem has a text and abbreviation', (tester) async {
+  testWidgets('ToDoListItem has a text', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: ToDoListItem(
+                item: const Item(name: "test"),
+                completed: true,
+                onListChanged: (Item item, bool completed) {},
+                onDeleteItem: (Item item) {}))));
+    final textFinder = find.text('test');
+
+    // Use the `findsOneWidget` matcher provided by flutter_test to verify
+    // that the Text widgets appear exactly once in the widget tree.
+    expect(textFinder, findsOneWidget);
+  });
+
+  testWidgets('ToDoListItem has a Circle Avatar with abbreviation',
+      (tester) async {
     await tester.pumpWidget(MaterialApp(
         home: Scaffold(
             body: ToDoListItem(
@@ -27,7 +43,6 @@ void main() {
                 onListChanged: (Item item, bool completed) {},
                 onDeleteItem: (Item item) {}))));
     final abbvFinder = find.text('t');
-    final textFinder = find.text('test');
     final avatarFinder = find.byType(CircleAvatar);
 
     CircleAvatar circ = tester.firstWidget(avatarFinder);
@@ -36,7 +51,6 @@ void main() {
     // Use the `findsOneWidget` matcher provided by flutter_test to verify
     // that the Text widgets appear exactly once in the widget tree.
     expect(abbvFinder, findsOneWidget);
-    expect(textFinder, findsOneWidget);
     expect(circ.backgroundColor, Colors.black54);
     expect(ctext.data, "t");
   });
@@ -55,7 +69,7 @@ void main() {
     expect(find.byType(TextField), findsNothing);
 
     await tester.tap(find.byType(FloatingActionButton));
-    await tester.pump();
+    await tester.pump(); // Pump after every action to rebuild the widgets
     expect(find.text("hi"), findsNothing);
 
     await tester.enterText(find.byType(TextField), 'hi');
@@ -70,4 +84,6 @@ void main() {
 
     expect(listItemFinder, findsNWidgets(2));
   });
+
+  // One to test the tap and press actions on the items?
 }
