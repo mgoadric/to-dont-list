@@ -1,6 +1,18 @@
 // Started with https://docs.flutter.dev/development/ui/widgets-intro
 import 'package:flutter/material.dart';
 import 'package:to_dont_list/to_do_items.dart';
+import 'package:to_dont_list/predict_task_warn.dart';
+import 'dart:math';
+import 'package:boxicons/boxicons.dart';
+import 'package:bootstrap_icons/bootstrap_icons.dart';
+
+List<Item> items = [
+  Item(name: "add more todos", index: "-1", strength: "Strong")
+];
+
+TextStyle _newTextStyle() {
+  return const TextStyle(fontFamily: "PT Serif", fontSize: 20);
+}
 
 class ToDoList extends StatefulWidget {
   const ToDoList({super.key});
@@ -9,21 +21,25 @@ class ToDoList extends StatefulWidget {
   State createState() => _ToDoListState();
 }
 
+typedef ListAddCallback = Function();
+
 class _ToDoListState extends State<ToDoList> {
   // Dialog with text from https://www.appsdeveloperblog.com/alert-dialog-with-a-text-field-in-flutter/
   final TextEditingController _inputController = TextEditingController();
-  final ButtonStyle yesStyle = ElevatedButton.styleFrom(
-      textStyle: const TextStyle(fontSize: 20), primary: Colors.green);
-  final ButtonStyle noStyle = ElevatedButton.styleFrom(
-      textStyle: const TextStyle(fontSize: 20), primary: Colors.red);
+  //Got rid of the initialized Button Styles to make more concise theme
+  int _selectedIndex = 0;
+  PredictTaskWarn ptw = PredictTaskWarn();
+  Color eightball = Color.fromARGB(255, 62, 118, 253);
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
+  Future<void> _displayTextInputDialog(BuildContext context, Item item) async {
     print("Loading Dialog");
+    final random = Random();
+
     return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('Item To Add'),
+            title: Text(style: _newTextStyle(), 'Item To Add'),
             content: TextField(
               onChanged: (value) {
                 setState(() {
@@ -36,13 +52,18 @@ class _ToDoListState extends State<ToDoList> {
             ),
             actions: <Widget>[
               ElevatedButton(
-                key: const Key("OkButton"),
-                style: yesStyle,
-                child: const Text('OK'),
+                key: const Key("OKButton"),
+                style: ElevatedButton.styleFrom(
+                    textStyle: _newTextStyle(), backgroundColor: eightball),
+                child: const Text("Ok"),
                 onPressed: () {
-                  setState(() {
-                    Navigator.pop(context);
-                  });
+                  if (valueText != "") {
+                    setState(() {
+                      _handleNewItem(valueText, item.index, item.strength);
+                      Navigator.pop(context);
+                      valueText = "";
+                    });
+                  }
                 },
               ),
 
@@ -52,16 +73,15 @@ class _ToDoListState extends State<ToDoList> {
                 builder: (context, value, child) {
                   return ElevatedButton(
                     key: const Key("CancelButton"),
-                    style: noStyle,
-                    onPressed: value.text.isNotEmpty
-                        ? () {
-                            setState(() {
-                              _handleNewItem(valueText);
-                              Navigator.pop(context);
-                            });
-                          }
-                        : null,
-                    child: const Text('Cancel'),
+                    style: ElevatedButton.styleFrom(
+                        textStyle: _newTextStyle(),
+                        backgroundColor: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        Navigator.pop(context);
+                      });
+                    },
+                    child: const Text("Cancel"),
                   );
                 },
               ),
@@ -72,9 +92,9 @@ class _ToDoListState extends State<ToDoList> {
 
   String valueText = "";
 
-  final List<Item> items = [const Item(name: "add more todos")];
-
   final _itemSet = <Item>{};
+
+  int numCompleted = 0;
 
   void _handleListChanged(Item item, bool completed) {
     setState(() {
@@ -89,10 +109,12 @@ class _ToDoListState extends State<ToDoList> {
         print("Completing");
         _itemSet.add(item);
         items.add(item);
+        numCompleted++;
       } else {
         print("Making Undone");
         _itemSet.remove(item);
         items.insert(0, item);
+        numCompleted--;
       }
     });
   }
@@ -104,12 +126,40 @@ class _ToDoListState extends State<ToDoList> {
     });
   }
 
-  void _handleNewItem(String itemText) {
+  void _handleNewItem(String itemText, String index, String strength) {
     setState(() {
       print("Adding new item");
-      Item item = const Item(name: "itemText");
+      Random rand = Random();
+      PredictTaskWarn ptw = PredictTaskWarn();
+      Item item = Item(
+          name: itemText,
+          index: index,
+          strength: ptw.strength[rand.nextInt(4)]);
       items.insert(0, item);
       _inputController.clear();
+    });
+  }
+
+  // When you click on a bottom nav bar item,
+  // this goes into the PredictTaskWarn and creates the task
+
+  // the ptw now takes index rather than the unreliable _selectedIndex
+  // Apparently, something happens where _selectedIndex does not get updated properly,
+  // so when some order of tasks, predictions, and warnings are made,
+  // _selectedIndex loses track and causes one of the other things to appear
+  // instead of the one that was most recently tapped.
+  void _onItemTapped(int index) {
+    setState(() {
+      Random rand = Random();
+      List itemInfo = ptw.ptw(index, rand);
+      String name = itemInfo[0];
+      Item item = Item(name: name, index: "$index", strength: "");
+      if (index == 0) {
+        String strength = itemInfo[1];
+        item.strength = strength;
+      }
+      items.insert(0, item);
+      print(index);
     });
   }
 
@@ -117,7 +167,8 @@ class _ToDoListState extends State<ToDoList> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('To Do List'),
+          backgroundColor: eightball,
+          title: Text(style: _newTextStyle(), 'Items completed: $numCompleted'),
         ),
         body: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -131,16 +182,49 @@ class _ToDoListState extends State<ToDoList> {
           }).toList(),
         ),
         floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add),
+            backgroundColor: eightball,
             onPressed: () {
-              _displayTextInputDialog(context);
-            }));
+              _displayTextInputDialog(context, items[0]);
+            },
+            child: const Icon(Icons.add)),
+        //This where all of the predict things happen
+        bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Boxicons.bxs_brain),
+              label: 'Predict',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(BootstrapIcons.list_task),
+              label: 'Task',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.warning_amber),
+              label: 'Warn',
+            ),
+          ],
+          //When an item gets selected we go into a function where we save the index and use that to create the tasks
+          currentIndex: _selectedIndex,
+          //Changed the color to be more in line with magic 8 ball
+          selectedItemColor: eightball,
+          onTap: _onItemTapped,
+        ));
   }
 }
 
 void main() {
-  runApp(const MaterialApp(
+  runApp(MaterialApp(
     title: 'To Do List',
-    home: ToDoList(),
+    theme: ThemeData(textTheme: TextTheme(titleMedium: _newTextStyle())),
+    home: const ToDoList(),
   ));
 }
+
+// "You could have the app be a fortune recorder,
+//  so the magic 8 ball is the way you get to add things to the list?"
+
+// Have a class that holds a huge list of "predictions", "tasks", and "warnings"
+// - When you press the button on the bottom,
+//    it will add a new item to the list from that list.
+// If you manually type something into the task list,
+//  append a magic eight ball saying to the end of the to do item.
