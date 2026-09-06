@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:to_dont_list/objects/item.dart';
 
 typedef ToDoListChangedCallback = Function(Item item, bool completed);
 typedef ToDoListRemovedCallback = Function(Item item);
 
-class ToDoListItem extends StatelessWidget {
+class ToDoListItem extends StatefulWidget {
   ToDoListItem(
       {required this.item,
       required this.completed,
@@ -17,6 +19,9 @@ class ToDoListItem extends StatelessWidget {
 
   final ToDoListChangedCallback onListChanged;
   final ToDoListRemovedCallback onDeleteItem;
+
+  @override
+  State<ToDoListItem> createState() => _CountDownState();
 
   Color _getColor(BuildContext context) {
     // The theme depends on the BuildContext because different
@@ -38,27 +43,53 @@ class ToDoListItem extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
+  
+}
+class _CountDownState extends State<ToDoListItem> {
+    //https://api.flutter.dev/flutter/dart-async/Timer-class.html
+    Timer? _timer;
+    double _timeRemaining = 10.0;
+
+    void _startTimer() {
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(milliseconds:100), (timer) {
+        setState(() {
+          if (_timeRemaining > 0) {
+            _timeRemaining -= 0.1;
+          } else {
+            _timer?.cancel();
+          }
+        });
+      });
+    }
+
+
+    @override
+    Widget build(BuildContext context){
+      return ListTile(
       onTap: () {
-        onListChanged(item, completed);
+        widget.onListChanged(widget.item, widget.completed);
       },
-      onLongPress: completed
+      onLongPress: widget.completed
           ? () {
-              onDeleteItem(item);
+              widget.onDeleteItem(widget.item);
             }
           : null,
       leading: CircleAvatar(
-        backgroundColor: _getColor(context),
+        backgroundColor: widget._getColor(context),
         child: Text(
-          item.abbrev(),
-          style: _getTextStyle(context),
+          '$_timeRemaining',
+          style: widget._getTextStyle(context),
         ),
       ),
       title: Text(
-        item.name,
+        widget.item.name,
       ),
     );
+      //return Row(
+      //  children: [
+      //    Text('Time remaining: $_timeRemaining')
+      //  ],
+      //);
+    }
   }
-}
