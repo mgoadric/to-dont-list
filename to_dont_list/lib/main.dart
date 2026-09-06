@@ -12,7 +12,7 @@ class ToDoList extends StatefulWidget {
 }
 
 class _ToDoListState extends State<ToDoList> {
-  final List<Item> items = [const Item(name: "add more todos")];
+  final List<Item> items = [Item(name: "add more todos")];
   final _itemSet = <Item>{};
 
   void _handleListChanged(Item item, bool completed) {
@@ -48,6 +48,7 @@ class _ToDoListState extends State<ToDoList> {
       print("Adding new item");
       Item item = Item(name: itemText);
       items.insert(0, item);
+      item.startTimer();
       textController.clear();
     });
   }

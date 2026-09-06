@@ -47,23 +47,12 @@ class ToDoListItem extends StatefulWidget {
 }
 class _CountDownState extends State<ToDoListItem> {
     //https://api.flutter.dev/flutter/dart-async/Timer-class.html
-    Timer? _timer;
-    double _timeRemaining = 10.0;
-
-    void _startTimer() {
-      _timer?.cancel();
-      _timer = Timer.periodic(const Duration(milliseconds:100), (timer) {
-        setState(() {
-          if (_timeRemaining > 0) {
-            _timeRemaining -= 0.1;
-          } else {
-            _timer?.cancel();
-          }
-        });
-      });
+    
+    @override
+    void dispose() {
+      widget.item.timer?.cancel();
+      super.dispose();
     }
-
-
     @override
     Widget build(BuildContext context){
       return ListTile(
@@ -78,7 +67,7 @@ class _CountDownState extends State<ToDoListItem> {
       leading: CircleAvatar(
         backgroundColor: widget._getColor(context),
         child: Text(
-          '$_timeRemaining',
+          widget.item.timeRemaining.toStringAsFixed(1),
           style: widget._getTextStyle(context),
         ),
       ),
