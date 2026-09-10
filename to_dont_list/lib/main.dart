@@ -1,4 +1,6 @@
 // Started with https://docs.flutter.dev/development/ui/widgets-intro
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:to_dont_list/objects/item.dart';
 import 'package:to_dont_list/widgets/to_do_items.dart';
@@ -14,6 +16,12 @@ class ToDoList extends StatefulWidget {
 class _ToDoListState extends State<ToDoList> {
   final List<Item> items = [Item(name: "add more todos")];
   final _itemSet = <Item>{};
+  Timer? _timer;
+  Timer? get timer => _timer;
+
+  _ToDoListState(){
+    startTimer();
+  }
 
   void _handleListChanged(Item item, bool completed) {
     setState(() {
@@ -48,10 +56,25 @@ class _ToDoListState extends State<ToDoList> {
       print("Adding new item");
       Item item = Item(name: itemText);
       items.insert(0, item);
-      item.startTimer();
       textController.clear();
     });
   }
+
+  void startTimer() {
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(milliseconds:100), (timer) {
+        setState(() {
+          for (Item item in items){
+            if(!_itemSet.contains(item) && item.timeRemaining > 0.1){
+              item.timeRemaining -= 0.1;
+            }
+            else if(!_itemSet.contains(item) && item.timeRemaining <= 0.1){
+              _handleListChanged(item, false);
+            }
+          }
+        });
+      });
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +101,14 @@ class _ToDoListState extends State<ToDoList> {
                   builder: (_) {
                     return ToDoDialog(onListAdded: _handleNewItem);
                   });
+                  
             }));
+
+    
   }
+  
 }
+
 
 void main() {
   runApp(const MaterialApp(

@@ -26,7 +26,7 @@ void main() {
 
     // Use the `findsOneWidget` matcher provided by flutter_test to verify
     // that the Text widgets appear exactly once in the widget tree.
-    expect(textFinder, findsOneWidget);
+    expect(textFinder, findsOneWidget);                                          
   });
 
   testWidgets('ToDoListItem has a Circle Avatar with abbreviation',

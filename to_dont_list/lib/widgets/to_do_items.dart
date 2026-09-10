@@ -20,8 +20,13 @@ class ToDoListItem extends StatefulWidget {
   final ToDoListChangedCallback onListChanged;
   final ToDoListRemovedCallback onDeleteItem;
 
+  
+
+
   @override
-  State<ToDoListItem> createState() => _CountDownState();
+  State<ToDoListItem> createState(){
+     return _CountDownState();
+  } 
 
   Color _getColor(BuildContext context) {
     // The theme depends on the BuildContext because different
@@ -43,14 +48,11 @@ class ToDoListItem extends StatefulWidget {
     );
   }
 
-  
 }
 class _CountDownState extends State<ToDoListItem> {
     //https://api.flutter.dev/flutter/dart-async/Timer-class.html
-    
     @override
     void dispose() {
-      widget.item.timer?.cancel();
       super.dispose();
     }
     @override
@@ -75,10 +77,12 @@ class _CountDownState extends State<ToDoListItem> {
         widget.item.name,
       ),
     );
+    
       //return Row(
       //  children: [
       //    Text('Time remaining: $_timeRemaining')
       //  ],
       //);
     }
+    
   }
