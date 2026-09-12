@@ -1,34 +1,46 @@
+import 'package:to_dont_list/objects/item.dart';
 import 'package:flutter/material.dart';
 
 typedef ToDoListAddedCallback = Function(
-    String value, TextEditingController textController);
+    Item item, String value, TextEditingController textController);
 
-class ToDoDialog extends StatefulWidget {
-  const ToDoDialog({
+class ToDoNoteEdit extends StatefulWidget {
+  const ToDoNoteEdit({
     super.key,
-    required this.onListAdded,
+    required this.item,
+    required this.onListChanged,
   });
 
-  final ToDoListAddedCallback onListAdded;
+  final Item item;
+  final ToDoListAddedCallback onListChanged;
 
   @override
-  State<ToDoDialog> createState() => _ToDoDialogState();
+  State<ToDoNoteEdit> createState() => _ToDoNoteEditState();
 }
 
-class _ToDoDialogState extends State<ToDoDialog> {
+class _ToDoNoteEditState extends State<ToDoNoteEdit> {
   // Dialog with text from https://www.appsdeveloperblog.com/alert-dialog-with-a-text-field-in-flutter/
-  final TextEditingController _inputController = TextEditingController();
+  // final TextEditingController _inputController = TextEditingController()..text = widget.item.name;
+  TextEditingController _inputController = TextEditingController();
   final ButtonStyle yesStyle = ElevatedButton.styleFrom(
       textStyle: const TextStyle(fontSize: 20), backgroundColor: Colors.green);
   final ButtonStyle noStyle = ElevatedButton.styleFrom(
       textStyle: const TextStyle(fontSize: 20), backgroundColor: Colors.red);
 
   String valueText = "";
+  @override
+  void initState() {
+    super.initState();
+    // WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+    valueText = widget.item.name;
+    _inputController = TextEditingController(text: widget.item.name);
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Item To Add'),
+      title: const Text('Edit Item:'),
       content: TextField(
         onChanged: (value) {
           setState(() {
@@ -36,7 +48,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
           });
         },
         controller: _inputController,
-        decoration: const InputDecoration(hintText: "type something here"),
+        decoration: const InputDecoration(hintText: "Empty. Press Cancel to restore text."),
       ),
       actions: <Widget>[
         ElevatedButton(
@@ -60,7 +72,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
               onPressed: value.text.isNotEmpty
                   ? () {
                       setState(() {
-                        widget.onListAdded(valueText, _inputController);
+                        widget.onListChanged(widget.item, valueText, _inputController);
                         Navigator.pop(context);
                       });
                     }

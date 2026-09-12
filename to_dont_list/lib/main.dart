@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:to_dont_list/objects/item.dart';
 import 'package:to_dont_list/widgets/to_do_items.dart';
 import 'package:to_dont_list/widgets/to_do_dialog.dart';
+import 'package:to_dont_list/widgets/to_do_deletecheck.dart';
+import 'package:to_dont_list/widgets/to_do_noteedit.dart';
 
 class ToDoList extends StatefulWidget {
   const ToDoList({super.key});
@@ -13,9 +15,9 @@ class ToDoList extends StatefulWidget {
 
 class _ToDoListState extends State<ToDoList> {
   final List<Item> items = [const Item(name: "add more todos")];
-  final _itemSet = <Item>{};
+  // final _itemSet = <Item>{};
 
-  void _handleListChanged(Item item, bool completed) {
+  void _handleListChanged(Item item, String newText, TextEditingController textController) {
     setState(() {
       // When a user changes what's in the list, you need
       // to change _itemSet inside a setState call to
@@ -24,16 +26,26 @@ class _ToDoListState extends State<ToDoList> {
       // which updates the visual appearance of the app.
 
       items.remove(item);
-      if (!completed) {
-        print("Completing");
-        _itemSet.add(item);
-        items.add(item);
-      } else {
-        print("Making Undone");
-        _itemSet.remove(item);
-        items.insert(0, item);
-      }
+      // if (!completed) {
+      //   print("Completing");
+      //   _itemSet.add(item);
+      //   items.add(item);
+      // } else {
+      //   print("Making Undone");
+      //   _itemSet.remove(item);
+      //   items.insert(0, item);
+      // }
+      items.insert(0, Item(name: newText));
+      textController.clear();
     });
+  }
+
+  void _createEditMenu(Item item) {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return ToDoNoteEdit(item: item, onListChanged: _handleListChanged);
+        });
   }
 
   void _handleDeleteItem(Item item) {
@@ -43,10 +55,18 @@ class _ToDoListState extends State<ToDoList> {
     });
   }
 
+  void _createDeleteMenu(Item item) {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return ToDoDeleteCheck(item: item, onDeleteItem: _handleDeleteItem);
+        });
+  }
+
   void _handleNewItem(String itemText, TextEditingController textController) {
     setState(() {
       print("Adding new item");
-      Item item = const Item(name: "itemText");
+      Item item = Item(name: itemText);
       items.insert(0, item);
       textController.clear();
     });
@@ -56,16 +76,16 @@ class _ToDoListState extends State<ToDoList> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('To Do List'),
+          title: const Text('Notes'),
         ),
         body: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           children: items.map((item) {
             return ToDoListItem(
               item: item,
-              completed: _itemSet.contains(item),
-              onListChanged: _handleListChanged,
-              onDeleteItem: _handleDeleteItem,
+              // completed: _itemSet.contains(item),
+              onListChanged: _createEditMenu,
+              onDeleteItem: _createDeleteMenu,
             );
           }).toList(),
         ),
