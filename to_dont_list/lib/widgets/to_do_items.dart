@@ -66,11 +66,19 @@ class _CountDownState extends State<ToDoListItem> {
               widget.onDeleteItem(widget.item);
             }
           : null,
-      leading: CircleAvatar(
-        backgroundColor: widget._getColor(context),
+      leading: Container(
+        width: 50,
+        height: 50,
+        decoration:BoxDecoration(
+          color: widget._getColor(context),
+        ),
         child: Text(
           widget.item.timeRemaining.toStringAsFixed(1),
           style: widget._getTextStyle(context),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          textScaler: const TextScaler.linear(1.5),
+          
         ),
       ),
       title: Text(

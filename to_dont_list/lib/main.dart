@@ -14,7 +14,7 @@ class ToDoList extends StatefulWidget {
 }
 
 class _ToDoListState extends State<ToDoList> {
-  final List<Item> items = [Item(name: "add more todos")];
+  final List<Item> items = [];
   final _itemSet = <Item>{};
   Timer? _timer;
   Timer? get timer => _timer;
@@ -81,7 +81,8 @@ class _ToDoListState extends State<ToDoList> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('To Do List'),
+          title: const Text('Timers'),
+          backgroundColor: Colors.green,
         ),
         body: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -113,7 +114,7 @@ class _ToDoListState extends State<ToDoList> {
 
 void main() {
   runApp(const MaterialApp(
-    title: 'To Do List',
+    title: 'Timers',
     home: ToDoList(),
   ));
 }
