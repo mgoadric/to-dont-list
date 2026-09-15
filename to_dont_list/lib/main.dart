@@ -51,10 +51,11 @@ class _ToDoListState extends State<ToDoList> {
     });
   }
 
-  void _handleNewItem(String itemText, TextEditingController textController) {
+  void _handleNewItem(String itemText, TextEditingController textController, double? time) {
     setState(() {
       print("Adding new item");
       Item item = Item(name: itemText);
+      item.timeRemaining = time ?? 10.0;
       items.insert(0, item);
       textController.clear();
     });
